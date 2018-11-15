@@ -3,7 +3,6 @@ package se.goteborg.retursidan.portlet.controller.config;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.ResourceRequest;
@@ -30,7 +29,6 @@ import se.goteborg.retursidan.service.StatisticsService;
 @Transactional
 @RequestMapping("EDIT")
 public class AdvancedStatisticsController extends BaseController {
-	private static Logger logger = Logger.getLogger(AdvancedStatisticsController.class.getName());
 	
 	@Autowired
 	private StatisticsService statisticsService;

@@ -1,19 +1,19 @@
 package se.goteborg.retursidan.portlet.validation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.form.Config;
 
 @Component
 public class ConfigValidator implements Validator {
-	private Logger logger = Logger.getLogger(ConfigValidator.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ConfigValidator.class);
 
 	@Override
 	public boolean supports(Class<?> clz) {
@@ -58,7 +58,7 @@ public class ConfigValidator implements Validator {
 		ValidationUtils.rejectIfEmpty(errors, "rulesUrl", "config.rulesurl.empty");
 		
 		if (errors.hasErrors()) {
-			logger.log(Level.FINE, errors.toString());
+			logger.info(errors.toString());
 		}
 	}
 

@@ -1,8 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 
@@ -13,7 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
-import se.goteborg.retursidan.model.entity.Advertisement;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Person;
 import se.goteborg.retursidan.model.entity.Request;
 
@@ -24,7 +23,7 @@ import se.goteborg.retursidan.model.entity.Request;
 @Controller
 @RequestMapping({"VIEW", "CONFIG"})
 public class ViewRequestController extends BaseController {
-	private static Logger logger = Logger.getLogger(ViewRequestController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ViewRequestController.class);
 	
 	@ModelAttribute("request")
 	public Request loadRequest(@RequestParam(value="requestId", required=false) Integer requestId, PortletRequest portletRequest) {
@@ -54,9 +53,9 @@ public class ViewRequestController extends BaseController {
 	@RenderMapping(params="page=viewRequest")
 	public String viewRequest(@RequestParam(value="requestId", required=false) Integer requestId, @RequestParam(value="previousPage", required=false) String previousPage, Model model) {
 		if (requestId != null) {
-			logger.log(Level.FINEST, "loading request id=" + requestId);
+			logger.debug("loading request id=" + requestId);
 			Request request = modelService.getRequest(requestId);
-			logger.log(Level.FINEST, "request=" + request);
+			logger.debug("request=" + request);
 			model.addAttribute("request", request);
 		}
 		if (previousPage != null) {

@@ -1,8 +1,6 @@
 package se.goteborg.retursidan.portlet.synpunkter.controller;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -22,14 +20,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.form.ConfigFeedback;
 import se.goteborg.retursidan.portlet.controller.BaseController;
+import se.goteborg.retursidan.portlet.controller.CreateAdController;
 import se.goteborg.retursidan.portlet.validation.ConfigFeedbackValidator;
 
 @Controller
 @RequestMapping("EDIT")
 public class ChangeConfigFeedbackController extends BaseController {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(ChangeConfigFeedbackController.class);
+	
 	
 	@Autowired
 	private ConfigFeedbackValidator configValidator;
@@ -47,7 +50,7 @@ public class ChangeConfigFeedbackController extends BaseController {
 	
 	@RenderMapping
 	public String render() {
-	    logger.finest("entering default render");
+	    logger.debug("entering default render");
 		return "config/change_config_feedback";
 	}
 
@@ -64,11 +67,11 @@ public class ChangeConfigFeedbackController extends BaseController {
 				prefs.setValue("feedbackMailBody", config.getFeedbackMailBody());
 				prefs.store();
 			} catch (ReadOnlyException e) {
-				logger.log(Level.SEVERE, "Could not set read-only portlet preferences!", e);
+				logger.error("Could not set read-only portlet preferences!", e);
 			} catch (ValidatorException e) {
-				logger.log(Level.SEVERE, "Portlet preference did not validate!", e);
+				logger.error("Portlet preference did not validate!", e);
 			} catch (IOException e) {
-				logger.log(Level.SEVERE, "Could not save portlet preferences!", e);
+				logger.error("Could not save portlet preferences!", e);
 			}
 		}
 	}

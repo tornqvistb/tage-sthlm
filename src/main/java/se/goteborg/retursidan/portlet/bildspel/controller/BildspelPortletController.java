@@ -1,7 +1,5 @@
 package se.goteborg.retursidan.portlet.bildspel.controller;
 
-import java.util.logging.Logger;
-
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
@@ -10,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.model.PagedList;
 import se.goteborg.retursidan.model.entity.Advertisement;
@@ -27,14 +28,14 @@ public class BildspelPortletController extends PhotoBaseController{
 	@Autowired
 	private ModelService modelService;
 	
-	private static Logger logger = Logger.getLogger(BildspelPortletController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(BildspelPortletController.class);
 	
 	@RenderMapping
 	public String render(RenderRequest request, RenderResponse response, Model model) {
-		logger.entering("BildspelPortletController", "render");
+		logger.debug("entering BildspelPortletController render");
 		PagedList<Advertisement> pagedList = modelService.getAllAdvertisements(Advertisement.Status.PUBLISHED, 1, 10);
 		model.addAttribute("ads", pagedList);
-		logger.exiting("BildspelPortletController", "render");
+		logger.debug("exiting BildspelPortletController render");
 		return "bildspel";
 	}
 	

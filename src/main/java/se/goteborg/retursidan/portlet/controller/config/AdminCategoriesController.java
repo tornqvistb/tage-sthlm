@@ -3,7 +3,6 @@ package se.goteborg.retursidan.portlet.controller.config;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionResponse;
 import javax.validation.Valid;
@@ -19,6 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Category;
 import se.goteborg.retursidan.portlet.controller.BaseController;
 import se.goteborg.retursidan.portlet.validation.CategoryValidator;
@@ -26,7 +28,7 @@ import se.goteborg.retursidan.portlet.validation.CategoryValidator;
 @Controller
 @RequestMapping("EDIT")
 public class AdminCategoriesController extends BaseController {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(AdminCategoriesController.class);
 	
 	@ModelAttribute("newCategory")
 	public Category getNewCategory() {
@@ -48,7 +50,7 @@ public class AdminCategoriesController extends BaseController {
 	
 	@RenderMapping(params="page=adminCategories")
 	public String changeCategories(Model model) {
-	    logger.finest("calling page=adminCategories");
+	    logger.debug("calling page=adminCategories");
 		List<Category> topCategories = modelService.getTopCategories();
 		model.addAttribute("topCategories", topCategories);
 
@@ -64,7 +66,7 @@ public class AdminCategoriesController extends BaseController {
 	
 	@ActionMapping("saveCategory")
 	public void saveUnit(@Valid @ModelAttribute("newCategory") Category category, BindingResult bindingResult, ActionResponse response, Model model) {
-	    logger.finest("calling saveCategory");
+	    logger.debug("calling saveCategory");
 		if (!bindingResult.hasErrors()) {
 			modelService.addCategory(category);			
 			// clear the newCategory model attribute so that the input box is empty
@@ -75,7 +77,7 @@ public class AdminCategoriesController extends BaseController {
 	
 	@ActionMapping("removeCategory")
 	public void removeUnit(@ModelAttribute("removeCategory") Category category, ActionResponse response, Model model) {
-	    logger.finest("calling removeCategory");
+	    logger.debug("calling removeCategory");
 	    Integer countAds = modelService.countAdsByCategory(category) + modelService.countRequestsByCategory(category);
 	    Integer countSubCats = modelService.getSubCategories(category.getId()).size();
 	    if (countAds == 0 && countSubCats == 0) {

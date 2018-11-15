@@ -3,8 +3,6 @@ package se.goteborg.retursidan.portlet.controller;
 import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.PortletContext;
 import javax.portlet.ResourceResponse;
@@ -14,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ResourceMapping;
 import org.springframework.web.portlet.context.PortletContextAware;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Photo;
 
 /**
@@ -21,7 +22,7 @@ import se.goteborg.retursidan.model.entity.Photo;
  * 
  */
 public class PhotoBaseController extends BaseController implements PortletContextAware {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(PhotoBaseController.class);
 	private void outputImage(ResourceResponse response, Integer id, boolean thumbnail) {
 		if (id != null) {
 			Photo photo = null;
@@ -37,22 +38,22 @@ public class PhotoBaseController extends BaseController implements PortletContex
 					IOUtils.copyLarge(image.getBinaryStream(), os);
 					os.close();
 				} else {
-					logger.log(Level.FINE, "Could not find " + (thumbnail ? "thumbnail" : "photo") + " with id = '" + id +"' in database.");
+					logger.debug("Could not find " + (thumbnail ? "thumbnail" : "photo") + " with id = '" + id +"' in database.");
 					outputDefault(response, thumbnail);
 				}
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Could not write " + (thumbnail ? "thumbnail" : "photo") + " with id = '" + id + "' to output stream.", e);
+				logger.error("Could not write " + (thumbnail ? "thumbnail" : "photo") + " with id = '" + id + "' to output stream.", e);
 				outputDefault(response, thumbnail);
 			}
 		} else {
-			logger.log(Level.FINE, "No id specified for " + (thumbnail ? "thumbnail" : "photo") + " requested.");
+			logger.error("No id specified for " + (thumbnail ? "thumbnail" : "photo") + " requested.");
 			outputDefault(response, thumbnail);			
 		}
 	}
 
 	private void outputDefault(ResourceResponse response, boolean thumbnail) {
 		// photo could not be found; serve up a default photo
-		logger.log(Level.FINE, "Requested " + (thumbnail ? "thumbnail" : "photo") + " could not be retrieved, so a default photo will be served up instead.");
+		logger.debug("Requested " + (thumbnail ? "thumbnail" : "photo") + " could not be retrieved, so a default photo will be served up instead.");
 		try {
 			FileInputStream is = new FileInputStream(portletContext.getRealPath("/img/pic_missing" + ((thumbnail) ? "_thumb" : "") + ".png"));
 			response.setContentType("image/png");
@@ -64,7 +65,7 @@ public class PhotoBaseController extends BaseController implements PortletContex
 			is.close();
 			os.close();
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Error while serving up default photo.", e);
+			logger.error("Error while serving up default photo.", e);
 		}		
 	}
 	

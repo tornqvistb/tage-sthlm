@@ -1,13 +1,14 @@
 package se.goteborg.retursidan.service;
 
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.dao.AdvertisementDAO;
 import se.goteborg.retursidan.exceptions.AdvertisementAlreadyBookedException;
@@ -23,7 +24,7 @@ import se.goteborg.retursidan.model.form.Texts;
 @Service
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class BookingService {
-	Logger logger = Logger.getLogger(BookingService.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(BookingService.class);
 	
 	@Autowired
 	private AdvertisementDAO advertisementDAO;
@@ -31,26 +32,23 @@ public class BookingService {
 	@Autowired
 	private MailService mailService;
 
-	@Autowired
-	private UserService userService;
 	
-	public void bookAdvertisement(Integer advertisementId, Person contact, Texts texts, Config config, String adLink, Person currentUser) throws AdvertisementBookingFailedException {
-		logger.log(Level.FINE, "Trying to book advertisement id=" + advertisementId + " for " + contact);
+	public void bookAdvertisement(Integer advertisementId, Person contact, Texts texts, Config config, String adLink, Person currentUser) throws AdvertisementBookingFailedException {		
 	
 		Advertisement advertisement = advertisementDAO.findById(advertisementId);
 		
 		if (advertisement == null) {
-			logger.log(Level.WARNING, "Could not find advertisement with id=" + advertisementId + " to book.");
+			logger.error("Could not find advertisement with id=" + advertisementId + " to book.");
 			throw new AdvertisementNotFoundException(advertisementId);
 		}
 					
 		// make sure only one thread can book at a time
 		synchronized(this) {
 			if (Advertisement.Status.BOOKED.equals(advertisement.getStatus())) {
-				logger.log(Level.WARNING, "Advertisement with id=" + advertisementId + " is already booked.");
+				logger.error("Advertisement with id=" + advertisementId + " is already booked.");
 				throw new AdvertisementAlreadyBookedException(advertisementId);
 			} else if (Advertisement.Status.EXPIRED.equals(advertisement.getStatus())) {
-				logger.log(Level.WARNING, "Advertisement with id=" + advertisementId + " is expired and can not be booked.");
+				logger.error("Advertisement with id=" + advertisementId + " is expired and can not be booked.");
 				throw new AdvertisementExpiredException(advertisementId);
 			}
 			advertisement.setBooker(contact);
@@ -62,6 +60,8 @@ public class BookingService {
 			advertisement.setBookerMail(currentUser.getEmail());
 			
 			advertisementDAO.merge(advertisement);
+			
+			logger.debug("Advertisement with id=" + advertisementId + " merged.");
 			
 			int count = 0;
 			if (advertisement.getCount() != null)
@@ -98,7 +98,9 @@ public class BookingService {
 			mailService.composeAndSendMail(composition);
 			composition.setReveiverAdress(new String[] {advertiserMail});
 			composition.setReplyToAdress(bookerMail);
-			mailService.composeAndSendMail(composition);			
+			mailService.composeAndSendMail(composition);
+			
+			logger.debug("Mails sent at booking for Advertisement with id=" + advertisementId);
 						
 		}
 	}

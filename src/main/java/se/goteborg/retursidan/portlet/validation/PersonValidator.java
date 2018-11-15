@@ -1,19 +1,19 @@
 package se.goteborg.retursidan.portlet.validation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Person;
 
 @Component
 public class PersonValidator implements Validator {
-	private Logger logger = Logger.getLogger(PersonValidator.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(PersonValidator.class);
 	
 	@Override
 	public boolean supports(Class<?> clz) {
@@ -31,7 +31,7 @@ public class PersonValidator implements Validator {
 		}
 		
 		if (errors.hasErrors()) {
-			logger.log(Level.FINE, errors.toString());
+			logger.info(errors.toString());
 		}
 	}
 

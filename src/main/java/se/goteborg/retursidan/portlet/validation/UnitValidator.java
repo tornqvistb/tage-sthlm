@@ -1,18 +1,19 @@
 package se.goteborg.retursidan.portlet.validation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Unit;
+import se.goteborg.retursidan.portlet.controller.CreateAdController;
 
 @Component
 public class UnitValidator implements Validator {
-	private Logger logger = Logger.getLogger(UnitValidator.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(UnitValidator.class);
 	
 	@Override
 	public boolean supports(Class<?> clz) {
@@ -25,7 +26,7 @@ public class UnitValidator implements Validator {
 		ValidationUtils.rejectIfEmptyOrWhitespace(errors, "administrationId", "unit.administrationId.missing");
 	
 		if (errors.hasErrors()) {
-			logger.log(Level.FINE, errors.toString());
+			logger.info(errors.toString());
 		}
 	}
 

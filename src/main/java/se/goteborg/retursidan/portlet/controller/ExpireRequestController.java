@@ -1,8 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -14,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Request;
 
 /**
@@ -23,7 +23,7 @@ import se.goteborg.retursidan.model.entity.Request;
 @Controller
 @RequestMapping("VIEW")
 public class ExpireRequestController extends BaseController {
-	private static Logger logger = Logger.getLogger(ExpireRequestController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ExpireRequestController.class);
 
 	@ModelAttribute("request")
 	public Request getRequest(@RequestParam(value="requestId", required=false) Integer requestId, PortletRequest request) {
@@ -37,9 +37,10 @@ public class ExpireRequestController extends BaseController {
 
 	@ActionMapping("performExpire")
 	public void performExpire(@ModelAttribute("request") Request request, ActionRequest portletRequest, ActionResponse portletResponse) {
-		logger.log(Level.FINER, "Expiring request with id=" + request.getId());
+		logger.debug("Expiring request with id=" + request.getId());
 		request.setStatus(Request.Status.EXPIRED);
 		modelService.updateRequest(request);
+		logger.debug("Reqauest has been expired");
 		portletResponse.setRenderParameter("externalPage", "");
 	}
 }

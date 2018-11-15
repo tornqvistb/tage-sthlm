@@ -2,7 +2,6 @@ package se.goteborg.retursidan.portlet.controller.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -13,6 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Unit;
 import se.goteborg.retursidan.portlet.controller.BaseController;
 import se.goteborg.retursidan.service.StatisticsService;
@@ -21,7 +23,7 @@ import se.goteborg.retursidan.service.VisitorLoggingService;
 @Controller
 @RequestMapping("EDIT")
 public class StatisticsController extends BaseController {
-	private static Logger logger = Logger.getLogger(StatisticsController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(StatisticsController.class);
 	
 	@Autowired
 	private VisitorLoggingService visitorLogging;
@@ -31,7 +33,7 @@ public class StatisticsController extends BaseController {
 	
 	@RenderMapping(params="page=statistics")
 	public String showStatistics(RenderRequest request, RenderResponse response, Model model) {
-	    logger.finest("entering statistics");
+	    logger.debug("entering statistics");
 		Integer uniqueVisitors = visitorLogging.getUniqueVisitors();
 		model.addAttribute("uniqueVisitors", uniqueVisitors);
 		

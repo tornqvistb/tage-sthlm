@@ -1,8 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -19,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.model.entity.Person;
 import se.goteborg.retursidan.model.entity.Request;
@@ -37,7 +37,7 @@ import se.goteborg.retursidan.util.CreateURLHelper;
 @Controller
 @RequestMapping("VIEW")
 public class ContactRequesterController extends BaseController {
-	private static Logger logger = Logger.getLogger(ContactRequesterController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ContactRequesterController.class);
 
 	@Autowired
 	private RequestMailContactValidator mailContactValidator;
@@ -60,11 +60,11 @@ public class ContactRequesterController extends BaseController {
 		RequestMailContact mailContact = new RequestMailContact();
 		Request request = modelService.getRequest(requestId);
 		if (request != null) {
-			logger.log(Level.FINER, "getMailContact has request: " + request.getId());
+			logger.debug("getMailContact has request: " + request.getId());
 			mailContact.setRequestId(request.getId());
 			mailContact.setRequestTitle(request.getTitle());
 		} else {
-			logger.log(Level.FINER, "getBooking did NOT find advertisment");
+			logger.info("getBooking did NOT find advertisment");
 		}
 
 		Person contact = getCurrentUser(portletRequest);
@@ -88,7 +88,7 @@ public class ContactRequesterController extends BaseController {
 		
 	@ActionMapping("sendMail")
 	public void sendMail(@Valid @ModelAttribute("requestMailContact") RequestMailContact mailContact, BindingResult bindingResult, Model model, ActionRequest actionRequest, ActionResponse actionResponse) {
-		logger.log(Level.FINER, "RequestMailContact: " + mailContact);
+		logger.debug("RequestMailContact: " + mailContact);
 		if (!bindingResult.hasErrors()) {
 			Request request = modelService.getRequest(mailContact.getRequestId());
 			Texts texts = getTexts(actionRequest);
@@ -119,8 +119,9 @@ public class ContactRequesterController extends BaseController {
 			if (!request.getPhotos().isEmpty()) {				
 				composition.setPhoto(modelService.getPhoto(request.getPhotos().get(0).getId()));
 			}
-			
+			logger.debug("Going to send mail");
 			mailService.composeAndSendMail(composition);
+			logger.debug("Mail has been sent");
 			actionResponse.setRenderParameter("page", "contactRequesterFinished");
 		} else {
 			actionResponse.setRenderParameter("page", "contactRequester");

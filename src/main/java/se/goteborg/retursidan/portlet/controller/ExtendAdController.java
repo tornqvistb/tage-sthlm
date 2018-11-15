@@ -1,9 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -16,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Advertisement;
 import se.goteborg.retursidan.util.DateHelper;
 
@@ -26,7 +25,7 @@ import se.goteborg.retursidan.util.DateHelper;
 @Controller
 @RequestMapping("VIEW")
 public class ExtendAdController extends BaseController {
-	private static Logger logger = Logger.getLogger(ExtendAdController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ExtendAdController.class);
 	
 	@ModelAttribute("advertisement")
 	public Advertisement getAdvertisement(@RequestParam(value="advertisementId", required=false) Integer advertisementId, PortletRequest request) {
@@ -47,9 +46,9 @@ public class ExtendAdController extends BaseController {
 	public void extendAd(@RequestParam(value="advertisementId") Integer advertisementId, Model model, ActionResponse response, ActionRequest request) {
 		Advertisement advertisement = modelService.getAdvertisement(advertisementId);
 		advertisement.setPublishDate(DateHelper.getCurrentDate());
-		logger.log(Level.FINER, "Updating advertisement: " + advertisement);		
+		logger.debug("Updating advertisement: " + advertisement);		
 		modelService.updateAd(advertisement);
-		logger.log(Level.FINE, "Advertisement updated");
+		logger.debug("Advertisement updated");
 		// reload the ad into the model to get all data populated
 		model.addAttribute("advertisement", modelService.getAdvertisement(advertisement.getId()));		
 		response.setRenderParameter("page", "extendAddFinished");

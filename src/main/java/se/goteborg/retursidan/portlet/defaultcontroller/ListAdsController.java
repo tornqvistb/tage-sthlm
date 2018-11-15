@@ -2,8 +2,6 @@ package se.goteborg.retursidan.portlet.defaultcontroller;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -19,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.model.PagedList;
 import se.goteborg.retursidan.model.entity.Advertisement;
@@ -41,7 +42,8 @@ import se.goteborg.retursidan.service.ModelService;
 @RequestMapping("VIEW")
 @SessionAttributes(types = SearchFilter.class)
 public class ListAdsController extends BaseController {
-	private static Logger logger = Logger.getLogger(ListAdsController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ListAdsController.class);
+	
 	
 	@Autowired
 	private ModelService modelService;
@@ -54,19 +56,19 @@ public class ListAdsController extends BaseController {
 	@RenderMapping
 	public String listAds(@ModelAttribute SearchFilter searchFilter, @RequestParam(value="pageIdx", required=false) Integer pageIdx, RenderRequest request, RenderResponse response, Model model) {
 		List<Unit> units = modelService.getUnits();
-		model.addAttribute("units", units);
-	
+		model.addAttribute("units", units);		
 		List<Category> topCategories = modelService.getTopCategories();
 		model.addAttribute("topCategories", topCategories);
 
 		if (searchFilter.getTopCategory() != null && searchFilter.getTopCategory().getId() > 0) {
 			List<Category> subCategories = modelService.getSubCategories(searchFilter.getTopCategory().getId());
+			logger.debug("Ad list for uid filtered using " + searchFilter + " for page " + pageIdx);
 			model.addAttribute("subCategories", subCategories);		
 		}
 		
 		if (!model.containsAttribute("ads")) {
-			System.out.println("*** Attribut ads finns ej ***");
 			PagedList<Advertisement> pagedList = modelService.getAllAdvertisements(Advertisement.Status.PUBLISHED, (pageIdx != null) ? pageIdx : 1, getConfig(request).getPageSizeInt());
+			logger.debug("Ad list for uid filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
 			model.addAttribute("ads", pagedList);
 		}
 		return "list_ads";
@@ -120,7 +122,7 @@ public class ListAdsController extends BaseController {
 	@ActionMapping("filterAds")
 	public void filterAds(@ModelAttribute SearchFilter searchFilter, @RequestParam(value="pageIdx", required=false) Integer pageIdx, Model model, ActionRequest request, ActionResponse response) {
 		PagedList<Advertisement> pagedList = modelService.getAllFilteredAdvertisements(Advertisement.Status.PUBLISHED, searchFilter.getTopCategory(), searchFilter.getSubCategory(), searchFilter.getUnit(), searchFilter.getSearchString(), (pageIdx != null) ? pageIdx : 1, getConfig(request).getPageSizeInt());
-		logger.log(Level.FINER, "Ad list filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
+		logger.debug("Ad list filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
 		model.addAttribute("ads", pagedList);
 		response.setRenderParameter("page", "listAds");
 	}
@@ -131,7 +133,7 @@ public class ListAdsController extends BaseController {
 		Status status = (Status.ALL.equals(searchFilter.getStatus())) ? null : searchFilter.getStatus();
 			
 		PagedList<Advertisement> pagedList = modelService.getAllFilteredAdvertisementsForUid(userId, searchFilter.getTopCategory(), searchFilter.getSubCategory(), searchFilter.getUnit(), status, (pageIdx != null) ? pageIdx : 1, getConfig(request).getPageSizeInt());
-		logger.log(Level.FINER, "Ad list for uid=" + userId + " filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
+		logger.debug("Ad list for uid=" + userId + " filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
 		model.addAttribute("ads", pagedList);
 		response.setRenderParameter("page", "listMyAds");
 	}
@@ -140,7 +142,7 @@ public class ListAdsController extends BaseController {
 	public void filterMyBookings(@ModelAttribute("userId") String userId, @ModelAttribute SearchFilter searchFilter, @RequestParam(value="pageIdx", required=false) Integer pageIdx, Model model, ActionRequest request, ActionResponse response) {
 
 		PagedList<Advertisement> pagedList = modelService.getAllFilteredBookingsForUid(userId, searchFilter.getTopCategory(), searchFilter.getSubCategory(), (pageIdx != null) ? pageIdx : 1, getConfig(request).getPageSizeInt());
-		logger.log(Level.FINER, "Ad bookings for uid=" + userId + " filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
+		logger.debug("Ad bookings for uid=" + userId + " filtered using " + searchFilter + " for page " + pageIdx + ", returing " + ((pagedList.getList() != null) ? pagedList.getList().size() : "null") + " ads.");
 		model.addAttribute("ads", pagedList);
 		response.setRenderParameter("page", "listMyBookings");
 	}

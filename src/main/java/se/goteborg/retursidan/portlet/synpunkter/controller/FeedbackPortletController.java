@@ -1,8 +1,5 @@
 package se.goteborg.retursidan.portlet.synpunkter.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletPreferences;
@@ -22,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Person;
 import se.goteborg.retursidan.model.form.Config;
 import se.goteborg.retursidan.model.form.Feedback;
@@ -38,7 +38,7 @@ import se.goteborg.retursidan.service.MailService;
 @RequestMapping("VIEW")
 public class FeedbackPortletController extends BaseController{
 	
-	private static Logger logger = Logger.getLogger(FeedbackPortletController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(FeedbackPortletController.class);
 	
 	@Autowired
 	private MailService mailService;
@@ -82,7 +82,7 @@ public class FeedbackPortletController extends BaseController{
 	
 	@ActionMapping("sendMail")
 	public void sendMail(@Valid @ModelAttribute("feedback") Feedback feedback, BindingResult bindingResult, Model model, ActionRequest actionRequest, ActionResponse actionResponse) {
-		logger.log(Level.FINER, "Feedback: " + feedback);
+		logger.debug("Feedback: " + feedback);
 		Config config = getConfig(actionRequest);
 		if (!bindingResult.hasErrors()) {
 			PortletPreferences prefs = actionRequest.getPreferences();
@@ -110,6 +110,7 @@ public class FeedbackPortletController extends BaseController{
 					0,
 					0);
 			mailService.composeAndSendMail(composition);
+			logger.debug("Feedback mail sent: " + feedback);
 			actionResponse.setRenderParameter("page", "feedbackFinished");
 		} else {
 			actionResponse.setRenderParameter("page", "feedbackForm");

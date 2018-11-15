@@ -1,8 +1,6 @@
 package se.goteborg.retursidan.portlet.controller;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -19,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Category;
 import se.goteborg.retursidan.model.entity.Request;
 import se.goteborg.retursidan.model.entity.Unit;
@@ -32,7 +33,7 @@ import se.goteborg.retursidan.portlet.validation.RequestValidator;
 @Controller
 @RequestMapping("VIEW")
 public class ChangeRequestController extends BaseController {
-	private static Logger logger = Logger.getLogger(ChangeRequestController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(ChangeRequestController.class);
 
 	@InitBinder("request")
 	public void initBinder(WebDataBinder binder) {
@@ -76,13 +77,14 @@ public class ChangeRequestController extends BaseController {
 	public void updateRequest(@Valid @ModelAttribute("request") Request request, BindingResult bindingResult, ActionRequest portletRequest, ActionResponse portletResponse, Model model) {
 		request.setCreatorUid(getUserId(portletRequest));
 		if (!bindingResult.hasErrors()) {
-			logger.log(Level.FINER, "Updating request: " + request);
+			logger.debug("Updating request: " + request);
 			modelService.updateRequest(request);
-			logger.log(Level.FINE, "Request updated: ");
+			logger.debug("Request updated: ");
 			// reload the request into the model to get all data populated
 			model.addAttribute("request", modelService.getRequest(request.getId()));
 			portletResponse.setRenderParameter("page", "viewRequest");
 		} else {
+			logger.debug("Binding errors for Request update: " + request);
 			portletResponse.setRenderParameter("page", "changeRequest");			
 		}
 	}		

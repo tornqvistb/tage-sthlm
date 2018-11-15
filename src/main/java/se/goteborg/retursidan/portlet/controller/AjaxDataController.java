@@ -2,8 +2,6 @@ package se.goteborg.retursidan.portlet.controller;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ResourceResponse;
 
@@ -12,6 +10,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ResourceMapping;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.model.entity.Category;
 import se.goteborg.retursidan.service.ModelService;
@@ -25,7 +26,7 @@ import se.goteborg.retursidan.service.ModelService;
 @Controller
 @RequestMapping("VIEW")
 public class AjaxDataController {
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(AjaxDataController.class);
 	
 	@Autowired
 	private ModelService modelService;
@@ -40,7 +41,7 @@ public class AjaxDataController {
 			}
 			response.getWriter().println(sb.toString());
 		} catch (IOException e) {
-			logger.log(Level.WARNING, "Could not write out sub categories to response stream", e);
+			logger.error("Could not write out sub categories to response stream", e);
 		}
 	}
 }

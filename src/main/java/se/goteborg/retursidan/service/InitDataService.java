@@ -1,8 +1,6 @@
 package se.goteborg.retursidan.service;
 
 import java.io.File;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -19,13 +17,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Category;
 import se.goteborg.retursidan.model.entity.Unit;
 
 @Service
 @Transactional(propagation = Propagation.REQUIRES_NEW)
 public class InitDataService {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(InitDataService.class);
 	
 	@Autowired
 	private ModelService modelService;
@@ -45,7 +46,7 @@ public class InitDataService {
 				path = path.substring(0, i + 7) + File.separator + "initial-data-import.xml"; 
 				File xmlFile = new File(path);
 				if(xmlFile.exists()) {
-					logger.log(Level.FINE, "Importing initial data");
+					logger.debug("Importing initial data");
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 					DocumentBuilder db = dbf.newDocumentBuilder();
 					Document doc = db.parse(xmlFile);
@@ -60,13 +61,13 @@ public class InitDataService {
 							Node node = categories.item(n);
 							Category topCategory = getCategory(xpath, node);
 							modelService.addCategory(topCategory);
-							logger.log(Level.FINER, "Importing category '" + topCategory.getTitle() + "' with id = " + topCategory.getId());
+							logger.debug("Importing category '" + topCategory.getTitle() + "' with id = " + topCategory.getId());
 							NodeList subCategories = (NodeList)xpath.evaluate("subcategories/category", node, XPathConstants.NODESET);
 							for(int x = 0; x < subCategories.getLength(); x++) {
 								Category subCategory = getCategory(xpath, subCategories.item(x));
 								subCategory.setParent(topCategory);
 								modelService.addCategory(subCategory);
-								logger.log(Level.FINER, "Importing sub category '" + topCategory.getTitle() + " > " + subCategory.getTitle() + "' with id = " + subCategory.getId());
+								logger.debug("Importing sub category '" + topCategory.getTitle() + " > " + subCategory.getTitle() + "' with id = " + subCategory.getId());
 							}
 						}
 					}
@@ -80,15 +81,15 @@ public class InitDataService {
 							String name = node.getTextContent();
 							unit.setName(name);
 							modelService.addUnit(unit);
-							logger.log(Level.FINER, "Importing unit '" + unit.getName() + "' with id = " + unit.getId());
+							logger.debug("Importing unit '" + unit.getName() + "' with id = " + unit.getId());
 						}
 					}
 				} else {
-					logger.log(Level.FINE, "No initial data import file found, skipping import.");
+					logger.info("No initial data import file found, skipping import.");
 				}
 			}
 		} catch(Exception e) {
-			logger.log(Level.WARNING, "Could not import initial data using XML file", e);
+			logger.error("Could not import initial data using XML file", e);
 		}	}
 
 }

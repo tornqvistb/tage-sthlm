@@ -1,18 +1,18 @@
 package se.goteborg.retursidan.portlet.validation;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Advertisement;
 
 @Component
 public class AdValidator implements Validator {
-	private Logger logger = Logger.getLogger(AdValidator.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(AdValidator.class);
 	
 	@Override
 	public boolean supports(Class<?> clz) {
@@ -45,7 +45,7 @@ public class AdValidator implements Validator {
 		}
 		
 		if (errors.hasErrors()) {
-			logger.log(Level.FINE, errors.toString());
+			logger.info(errors.toString());
 		}
 	}
 

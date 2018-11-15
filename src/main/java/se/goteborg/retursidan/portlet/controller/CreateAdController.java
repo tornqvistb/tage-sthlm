@@ -1,8 +1,6 @@
 package se.goteborg.retursidan.portlet.controller;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -19,6 +17,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
+
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 
 import se.goteborg.retursidan.model.entity.Advertisement;
 import se.goteborg.retursidan.model.entity.Category;
@@ -40,7 +41,8 @@ import se.goteborg.retursidan.util.DateHelper;
 @Controller
 @RequestMapping("VIEW")
 public class CreateAdController extends BaseController {
-	private static Logger logger = Logger.getLogger(CreateAdController.class.getName());	
+	
+	private static Log logger = LogFactoryUtil.getLog(CreateAdController.class);
 	
 	@Autowired
 	private MailService mailService;
@@ -93,7 +95,7 @@ public class CreateAdController extends BaseController {
 	public void saveAd(@Valid @ModelAttribute("advertisement") Advertisement advertisement, BindingResult bindingResult, ActionRequest request, ActionResponse response, Model model) {
 		advertisement.setCreatorUid(getUserId(request));
 		if (!bindingResult.hasErrors()) {
-			logger.log(Level.FINER, "Saving advertisement: " + advertisement);
+			logger.debug("LR: Saving advertisement: " + advertisement);
 			advertisement.setStatus(Advertisement.Status.PUBLISHED);
 			advertisement.setPublishDate(DateHelper.getCurrentDate());
 			Person creator = getCurrentUser(request);
@@ -101,7 +103,7 @@ public class CreateAdController extends BaseController {
 			advertisement.setCreatorMail(creator.getEmail());
 			advertisement.setCreatorUnitCode(creator.getUnitCode());
 			int id = modelService.saveAd(advertisement);
-			logger.log(Level.FINE, "Advertisement saved with id = " + id);
+			logger.info("Advertisement saved with id = " + id);
 			
 			// Send mail to the person who created the ad
 			advertisement = modelService.getAdvertisement(id);
@@ -131,7 +133,7 @@ public class CreateAdController extends BaseController {
 			}
 			
 			mailService.composeAndSendMail(composition);
-
+			logger.debug("Create ad, mail has been sent for Advertisement with id = " + id);
 			// reload the ad into the model to get all data populated
 			model.addAttribute("advertisement", advertisement);
 			response.setRenderParameter("page", "viewAd");

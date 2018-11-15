@@ -1,9 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -15,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.entity.Advertisement;
 import se.goteborg.retursidan.util.DateHelper;
 
@@ -25,7 +24,7 @@ import se.goteborg.retursidan.util.DateHelper;
 @Controller
 @RequestMapping("VIEW")
 public class RepublishAdController extends BaseController {
-	private static Logger logger = Logger.getLogger(RepublishAdController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(RepublishAdController.class);
 
 	@ModelAttribute("advertisement")
 	public Advertisement getAdvertisement(@RequestParam(value="advertisementId", required=false) Integer advertisementId, PortletRequest request) {
@@ -39,9 +38,10 @@ public class RepublishAdController extends BaseController {
 
 	@ActionMapping("performRepublishing")
 	public void performRepublishing(@ModelAttribute("advertisement") Advertisement advertisement, ActionRequest request, ActionResponse response) {
-		logger.log(Level.FINER, "Republishing ad with id=" + advertisement.getId());
+		logger.debug("Republishing ad with id=" + advertisement.getId());
 		advertisement.setStatus(Advertisement.Status.PUBLISHED);
 		advertisement.setPublishDate(DateHelper.getCurrentDate());
 		modelService.updateAd(advertisement);
+		logger.debug("Ad republished");
 	}
 }

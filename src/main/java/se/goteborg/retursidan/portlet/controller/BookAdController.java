@@ -1,8 +1,5 @@
 package se.goteborg.retursidan.portlet.controller;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
@@ -20,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.exceptions.AdvertisementException;
 import se.goteborg.retursidan.model.entity.Advertisement;
 import se.goteborg.retursidan.model.entity.Person;
@@ -35,7 +35,7 @@ import se.goteborg.retursidan.util.CreateURLHelper;
 @Controller
 @RequestMapping("VIEW")
 public class BookAdController extends BaseController {
-	private static Logger logger = Logger.getLogger(BookAdController.class.getName());
+	private static Log logger = LogFactoryUtil.getLog(BookAdController.class);
 
 	@Autowired
 	private BookingValidator bookingValidator;
@@ -58,11 +58,11 @@ public class BookAdController extends BaseController {
 		Booking booking = new Booking();
 		Advertisement advertisement =  modelService.getAdvertisement(advertisementId);
 		if (advertisement != null) {
-			logger.log(Level.FINER, "getBooking has advertisment: " + advertisement.getId());
+			logger.debug("getBooking has advertisment: " + advertisement.getId());
 			booking.setAdvertisementId(advertisement.getId());
 			booking.setAdvertisementTitle(advertisement.getTitle());
 		} else {
-			logger.log(Level.FINER, "getBooking did NOT find advertisment");
+			logger.debug("getBooking did NOT find advertisment");
 		}
 
 		Person contact = getCurrentUser(request);
@@ -91,7 +91,7 @@ public class BookAdController extends BaseController {
 		
 	@ActionMapping("performBooking")
 	public void performBooking(@Valid @ModelAttribute("booking") Booking booking, BindingResult bindingResult, Model model, ActionRequest request, ActionResponse response) {
-		logger.log(Level.FINER, "Booking requested: " + booking);
+		logger.debug("Booking requested: " + booking);
 		if (!bindingResult.hasErrors()) {
 			booking.getContact().setUserId(getUserId(request));
 			try {
@@ -100,6 +100,7 @@ public class BookAdController extends BaseController {
 				bookingService.bookAdvertisement(booking.getAdvertisementId(), booking.getContact(), getTexts(request), getConfig(request), adLink, currentUser);
 				response.setRenderParameter("page", "bookAdFinished");
 			} catch(AdvertisementException e) {
+				logger.error("Booking failed: " + booking, e);
 				model.addAttribute("errorMessage", messageSource.getMessage(e.getMessageCode(), new Object[]{e.getAdvertisementId()}, request.getLocale()));
 				response.setRenderParameter("page", "bookAdError");
 			}

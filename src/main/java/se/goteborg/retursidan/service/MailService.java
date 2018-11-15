@@ -6,14 +6,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.sql.Blob;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -26,11 +23,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.form.MailComposition;
+import se.goteborg.retursidan.portlet.controller.CreateAdController;
 
 @Service
 public class MailService {
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(MailService.class);
 	private final static String IMAGE_MARKUP = "<p><img src=\"cid:ad-image\"></img></p>";
 	private final static String LOGO_MARKUP = "<p><img src=\"cid:logo-image\"></img></p>";
 	
@@ -73,7 +74,7 @@ public class MailService {
 	private void sendMultiPartMail(MailComposition composition, MimeMultipart multipart) {
 		MimeMessage message = mailSender.createMimeMessage();
 		try {
-			logger.log(Level.FINEST, "Sending multipart mail");
+			logger.debug("Sending multipart mail");
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			helper.setFrom(composition.getSenderAdress());
 			helper.setTo(composition.getReveiverAdress());
@@ -85,9 +86,9 @@ public class MailService {
 				helper.setReplyTo(composition.getReplyToAdress());
 			}
 			mailSender.send(message);
-			logger.log(Level.FINEST, "Mail sent to " + composition.getReveiverAdress());
+			logger.debug("Mail sent to " + composition.getReveiverAdress());
 		} catch (MessagingException e) {
-			logger.log(Level.WARNING, "Could not send mail", e);
+			logger.error("Could not send mail", e);
 		}
 	}
 
@@ -145,13 +146,13 @@ public class MailService {
 				messageBodyPart.setHeader("Content-ID", "<logo-image>");
 				multipart.addBodyPart(messageBodyPart);
 			} catch (Exception e) {
-				logger.log(Level.WARNING, "Could not add logo to mail. Continue anyway.", e);
+				logger.error("Could not add logo to mail. Continue anyway.", e);
 			}			
 			
 			sendMultiPartMail(composition, multipart);
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.log(Level.WARNING, "Could not send mail", e);
+			logger.error("Could not send mail", e);
 		}
 
 	}

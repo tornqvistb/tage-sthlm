@@ -1,8 +1,6 @@
 package se.goteborg.retursidan.portlet.controller.config;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -21,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.model.form.Texts;
 import se.goteborg.retursidan.portlet.controller.BaseController;
 import se.goteborg.retursidan.portlet.validation.TextsValidator;
@@ -28,7 +29,7 @@ import se.goteborg.retursidan.portlet.validation.TextsValidator;
 @Controller
 @RequestMapping("EDIT")
 public class ChangeTextsController extends BaseController {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(ChangeTextsController.class);
 	
 	@Autowired
 	private TextsValidator textsValidator;
@@ -68,11 +69,11 @@ public class ChangeTextsController extends BaseController {
 				prefs.setValue("mailBodyNewRequest", texts.getMailBodyNewRequest());
 				prefs.store();
 			} catch (ReadOnlyException e) {
-				logger.log(Level.SEVERE, "Could not set read-only portlet preferences!", e);
+				logger.error("Could not set read-only portlet preferences!", e);
 			} catch (ValidatorException e) {
-				logger.log(Level.SEVERE, "Portlet preference did not validate!", e);
+				logger.error("Portlet preference did not validate!", e);
 			} catch (IOException e) {
-				logger.log(Level.SEVERE, "Could not save portlet preferences!", e);
+				logger.error("Could not save portlet preferences!", e);
 			}
 		} else {
 			response.setRenderParameter("page", "changeTexts");

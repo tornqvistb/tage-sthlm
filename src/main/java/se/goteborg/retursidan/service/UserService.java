@@ -1,7 +1,5 @@
 package se.goteborg.retursidan.service;
 
-import java.util.logging.Logger;
-
 import javax.portlet.PortletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.UserLocalServiceUtil;
@@ -27,7 +27,7 @@ public class UserService {
 	@Autowired
 	private UnitDAO unitDAO;
 	
-	Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(UserService.class);
 	private static final String UNKNOWN = "okänd";
 	
 	private Person getUnknownPerson() {
@@ -46,6 +46,7 @@ public class UserService {
 			person.setName(user.getFullName());
 			person.setUnitCode(user.getJobTitle());
 		} else {
+			logger.info("Returning unknown person.");
 			person = getUnknownPerson();
 		}
 		return person;
@@ -88,9 +89,11 @@ public class UserService {
 			User user = UserLocalServiceUtil.getUserByScreenName(td.getCompanyId(), userId);
 			person = userToPerson(user);
 		} catch (PortalException e) {			
+			logger.error("Error when looking for user in portal.", e);
 			e.printStackTrace();
 			person = getUnknownPerson();
 		} catch (SystemException e) {
+			logger.error("Error when looking for user in portal.", e);
 			e.printStackTrace();
 			person = getUnknownPerson();
 		}

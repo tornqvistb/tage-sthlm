@@ -1,7 +1,6 @@
 package se.goteborg.retursidan.portlet.controller.config;
 
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.portlet.ActionResponse;
 import javax.validation.Valid;
@@ -17,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
 import se.goteborg.retursidan.dao.AdvertisementDAO;
 import se.goteborg.retursidan.model.entity.Unit;
 import se.goteborg.retursidan.portlet.controller.BaseController;
@@ -25,7 +27,7 @@ import se.goteborg.retursidan.portlet.validation.UnitValidator;
 @Controller
 @RequestMapping("EDIT")
 public class AdminUnitsController extends BaseController {
-	private Logger logger = Logger.getLogger(this.getClass().getName());
+	private static Log logger = LogFactoryUtil.getLog(AdminUnitsController.class);
 	
 	@ModelAttribute("newUnit")
 	public Unit getNewUnit() {
@@ -56,7 +58,7 @@ public class AdminUnitsController extends BaseController {
 	
 	@ActionMapping("saveUnit")
 	public void saveUnit(@Valid @ModelAttribute("newUnit") Unit unit, BindingResult bindingResult, ActionResponse response, Model model) {
-	    logger.finest("entering saveUnit");
+	    logger.debug("entering saveUnit");
 		if (!bindingResult.hasErrors()) {
 			modelService.addUnit(unit);
 			
@@ -70,7 +72,7 @@ public class AdminUnitsController extends BaseController {
 	
 	@ActionMapping("removeUnit")
 	public void removeUnit(@ModelAttribute("removeUnit") Unit unit, ActionResponse response, Model model) {
-	    logger.finest("entering removeUnit");
+	    logger.debug("entering removeUnit");
 	    // Check if there are any request or ads for this unit
 	    Integer count = modelService.countAdsByUnit(unit) + modelService.countRequestsByUnit(unit);
 	    if (count == 0) {
