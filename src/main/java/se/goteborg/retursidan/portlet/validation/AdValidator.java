@@ -2,6 +2,7 @@ package se.goteborg.retursidan.portlet.validation;
 
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
@@ -45,7 +46,7 @@ public class AdValidator implements Validator {
 		}
 		
 		if (errors.hasErrors()) {
-			logger.info(errors.toString());
+			logger.info("ad errors: " + errors.toString());
 		}
 	}
 
