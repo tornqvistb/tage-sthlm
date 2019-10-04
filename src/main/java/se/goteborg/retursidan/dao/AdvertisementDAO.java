@@ -12,8 +12,10 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import se.goteborg.retursidan.exceptions.AdvertisementPhotoException;
 import se.goteborg.retursidan.model.DateSpan;
 import se.goteborg.retursidan.model.PagedList;
 import se.goteborg.retursidan.model.entity.Advertisement;
@@ -30,11 +32,15 @@ import se.goteborg.retursidan.util.StringFormatter;
 @Repository
 public class AdvertisementDAO extends BaseDAO<Advertisement> {
 	
+	
+	@Autowired
+	private PhotoDAO photoDAO;
+
 	/**
 	 * @see BaseDAO#findById(int)
 	 */
 	@Override
-	public Advertisement findById(int id) {
+	public Advertisement findById(int id) throws AdvertisementPhotoException{
 		Advertisement advertisement = (Advertisement)getSessionFactory().getCurrentSession().get(Advertisement.class, id);
 		if (advertisement != null) {
 			replaceProxiedPhoto(advertisement);
@@ -189,18 +195,21 @@ public class AdvertisementDAO extends BaseDAO<Advertisement> {
 	 * @param advertisement The advertisement for which all photos should be replaced
 	 * @return The advertisement with replaced photos
 	 */
-	private Advertisement replaceProxiedPhoto(Advertisement advertisement) {
-		List<Photo> photos = advertisement.getPhotos();
-		List<Photo> newPhotos = new ArrayList<Photo>();
-		for (Photo photo : photos) {
-			Photo newPhoto = new Photo();
-			newPhoto.setId(photo.getId());
-			newPhotos.add(newPhoto);
+	private Advertisement replaceProxiedPhoto(Advertisement advertisement) throws AdvertisementPhotoException {
+		try {
+			List<Photo> photos = advertisement.getPhotos();
+			List<Photo> newPhotos = new ArrayList<Photo>();
+			for (Photo photo : photos) {
+				Photo newPhoto = new Photo();
+				newPhoto.setId(photo.getId());
+				newPhotos.add(newPhoto);
+			}
+			advertisement.setPhotos(newPhotos);
+			return advertisement;
+		} catch (Exception e) {
+			throw new AdvertisementPhotoException(advertisement.getId());
 		}
-		advertisement.setPhotos(newPhotos);
-		return advertisement;
 	}	
-	
 	/**
 	 * Replace all photos for all advertisements in a list
 	 * @see AdvertisementDAO#replaceProxiedPhoto(Advertisement)
@@ -213,7 +222,6 @@ public class AdvertisementDAO extends BaseDAO<Advertisement> {
 		}
 		return list;
 	}
-
 	/**
 	 * Retrieve the count of all advertisements in the database with a certain datespan
 	 * @return the number of advertisements

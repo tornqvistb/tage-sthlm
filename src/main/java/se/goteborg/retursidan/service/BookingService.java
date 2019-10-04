@@ -2,6 +2,8 @@ package se.goteborg.retursidan.service;
 
 import java.util.Date;
 
+import javax.mail.Session;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,6 +17,7 @@ import se.goteborg.retursidan.exceptions.AdvertisementAlreadyBookedException;
 import se.goteborg.retursidan.exceptions.AdvertisementBookingFailedException;
 import se.goteborg.retursidan.exceptions.AdvertisementExpiredException;
 import se.goteborg.retursidan.exceptions.AdvertisementNotFoundException;
+import se.goteborg.retursidan.exceptions.AdvertisementPhotoException;
 import se.goteborg.retursidan.model.entity.Advertisement;
 import se.goteborg.retursidan.model.entity.Person;
 import se.goteborg.retursidan.model.form.Config;
@@ -22,7 +25,7 @@ import se.goteborg.retursidan.model.form.MailComposition;
 import se.goteborg.retursidan.model.form.Texts;
 
 @Service
-@Transactional(propagation = Propagation.REQUIRES_NEW)
+@Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = AdvertisementPhotoException.class)
 public class BookingService {
 	private static Log logger = LogFactoryUtil.getLog(BookingService.class);
 	
@@ -35,15 +38,20 @@ public class BookingService {
 	
 	public void bookAdvertisement(Integer advertisementId, Person contact, Texts texts, Config config, String adLink, Person currentUser) throws AdvertisementBookingFailedException {		
 	
-		Advertisement advertisement = advertisementDAO.findById(advertisementId);
-		
-		if (advertisement == null) {
-			logger.error("Could not find advertisement with id=" + advertisementId + " to book.");
-			throw new AdvertisementNotFoundException(advertisementId);
-		}
-					
-		// make sure only one thread can book at a time
 		synchronized(this) {
+			Advertisement advertisement;
+			try {
+				advertisement = advertisementDAO.findById(advertisementId);
+			} catch (AdvertisementPhotoException e) {
+				advertisement = null;
+			}
+			
+			if (advertisement == null) {
+				logger.error("Could not find advertisement with id=" + advertisementId + " to book.");
+				throw new AdvertisementNotFoundException(advertisementId);
+			}
+						
+			// make sure only one thread can book at a time
 			if (Advertisement.Status.BOOKED.equals(advertisement.getStatus())) {
 				logger.error("Advertisement with id=" + advertisementId + " is already booked.");
 				throw new AdvertisementAlreadyBookedException(advertisementId);

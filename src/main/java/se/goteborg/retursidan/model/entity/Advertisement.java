@@ -348,4 +348,7 @@ public class Advertisement extends GeneralEntityBean implements Serializable {
 	public void setCount(Integer count) {
 		this.count = count;
 	}
+	
+	@Transient
+	private String something;
 }
