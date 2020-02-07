@@ -48,15 +48,19 @@ public class BookingService {
 			
 			if (advertisement == null) {
 				logger.error("Could not find advertisement with id=" + advertisementId + " to book.");
+				advertisementDAO.getSessionFactory().getCurrentSession().close();
 				throw new AdvertisementNotFoundException(advertisementId);
+				
 			}
 						
 			// make sure only one thread can book at a time
 			if (Advertisement.Status.BOOKED.equals(advertisement.getStatus())) {
 				logger.error("Advertisement with id=" + advertisementId + " is already booked.");
+				advertisementDAO.getSessionFactory().getCurrentSession().close();
 				throw new AdvertisementAlreadyBookedException(advertisementId);
 			} else if (Advertisement.Status.EXPIRED.equals(advertisement.getStatus())) {
 				logger.error("Advertisement with id=" + advertisementId + " is expired and can not be booked.");
+				advertisementDAO.getSessionFactory().getCurrentSession().close();
 				throw new AdvertisementExpiredException(advertisementId);
 			}
 			advertisement.setBooker(contact);

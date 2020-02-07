@@ -65,6 +65,7 @@ public class MailService {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.host", "smtprelay.stockholm.se");
 		props.put("mail.smtp.port", "25");
+		props.put("mail.smtp.ssl.trust", "*");
 
 		Session session = Session.getInstance(props);
 
