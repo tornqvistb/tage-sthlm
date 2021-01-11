@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.portlet.ResourceRequest;
@@ -12,6 +13,8 @@ import javax.portlet.ResourceResponse;
 import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.imaging.ImageReadException;
+import org.apache.commons.imaging.ImageWriteException;
 import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -82,6 +85,10 @@ public class UploadController extends BaseController {
 			logger.error("Error occured uploaded multipart data.", e);
 		} catch (SQLException e) {
 			logger.error("Error occured when storing uploaded file data.", e);
+		} catch (ImageReadException e) {
+			logger.error("Error occured when reading image.", e);
+		} catch (ImageWriteException e) {
+			logger.error("Error occured when writing image.", e);
 		}
 	}
 
