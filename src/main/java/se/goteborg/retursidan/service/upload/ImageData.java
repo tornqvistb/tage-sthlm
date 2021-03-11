@@ -111,10 +111,11 @@ public class ImageData {
     	String result = ORIENTATION_NORMAL;
     	
 		final ImageMetadata metadata = Imaging.getMetadata(this.imageData);
-
-		for (ImageMetadataItem item : metadata.getItems()) {
-			if (item.toString().startsWith("Orientation")) {
-				result = item.toString().substring(13);
+		if (metadata != null &&  metadata.getItems() != null &&  metadata.getItems().size() > 0) {
+			for (ImageMetadataItem item : metadata.getItems()) {
+				if (item.toString().startsWith("Orientation")) {
+					result = item.toString().substring(13);
+				}
 			}
 		}
     	return result;
